@@ -1,0 +1,147 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{7763908F-9B0B-48E6-B233-0F8D95813554}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>WindowsApplication</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>ClickerApp13</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".vs\ClickerApp1.2\v16\.suo" />
+    <None Include="ClickerApp1.2\App.config" />
+    <None Include="ClickerApp1.2\bin\Debug\ClickerApp1.2.exe.config" />
+    <None Include="ClickerApp1.2\bin\Release\ClickerApp1.2.exe.config" />
+    <None Include="ClickerApp1.2\ClickerApp1.2.csproj" />
+    <None Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.csproj.CopyComplete" />
+    <None Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.csproj.CoreCompileInputs.cache" />
+    <None Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.csproj.GenerateResource.cache" />
+    <None Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.csprojAssemblyReference.cache" />
+    <None Include="ClickerApp1.2\obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <None Include="ClickerApp1.2\obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="ClickerApp1.2\obj\Release\ClickerApp1.2.csproj.CopyComplete" />
+    <None Include="ClickerApp1.2\obj\Release\ClickerApp1.2.csproj.CoreCompileInputs.cache" />
+    <None Include="ClickerApp1.2\obj\Release\ClickerApp1.2.csproj.GenerateResource.cache" />
+    <None Include="ClickerApp1.2\obj\Release\ClickerApp1.2.csprojAssemblyReference.cache" />
+    <None Include="ClickerApp1.2\obj\Release\DesignTimeResolveAssemblyReferences.cache" />
+    <None Include="ClickerApp1.2\obj\Release\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="ClickerApp1.2\Properties\DataSources\Form1.datasource" />
+    <None Include="ClickerApp1.2\Properties\Settings.settings" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ClickerApp1.2\bin\Debug\ClickerApp1.2.exe" />
+    <Content Include="ClickerApp1.2\bin\Debug\ClickerApp1.2.pdb" />
+    <Content Include="ClickerApp1.2\bin\Debug\debug.txt" />
+    <Content Include="ClickerApp1.2\bin\Debug\Microsoft.VisualStudio.OLE.Interop.dll" />
+    <Content Include="ClickerApp1.2\bin\Debug\Microsoft.VisualStudio.TestTools.UITest.Extension.dll" />
+    <Content Include="ClickerApp1.2\bin\Debug\ru\Microsoft.VisualStudio.TestTools.UITest.Extension.resources.dll" />
+    <Content Include="ClickerApp1.2\bin\Release\ClickerApp1.2.exe" />
+    <Content Include="ClickerApp1.2\bin\Release\ClickerApp1.2.pdb" />
+    <Content Include="ClickerApp1.2\bin\Release\ClickerApp1.2.xml" />
+    <Content Include="ClickerApp1.2\bin\Release\icons\Clicker.ico" />
+    <Content Include="ClickerApp1.2\bin\Release\icons\Clicker.png" />
+    <Content Include="ClickerApp1.2\bin\Release\Microsoft.VisualStudio.OLE.Interop.dll" />
+    <Content Include="ClickerApp1.2\bin\Release\Microsoft.VisualStudio.TestTools.UITest.Extension.dll" />
+    <Content Include="ClickerApp1.2\bin\Release\ru\Microsoft.VisualStudio.TestTools.UITest.Extension.resources.dll" />
+    <Content Include="ClickerApp1.2\Clicker.ico" />
+    <Content Include="ClickerApp1.2\ClickerApp1.2.csproj.user" />
+    <Content Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.csproj.FileListAbsolute.txt" />
+    <Content Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.exe" />
+    <Content Include="ClickerApp1.2\obj\Debug\ClickerApp1.2.pdb" />
+    <Content Include="ClickerApp1.2\obj\Release\ClickerApp1.2.csproj.FileListAbsolute.txt" />
+    <Content Include="ClickerApp1.2\obj\Release\ClickerApp1.2.exe" />
+    <Content Include="ClickerApp1.2\obj\Release\ClickerApp1.2.pdb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ClickerApp1.2\ClickerApp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ClickerApp1.2\ClickerApp.Designer.cs">
+      <DependentUpon>ClickerApp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ClickerApp1.2\EditRow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ClickerApp1.2\EditRow.Designer.cs">
+      <DependentUpon>EditRow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ClickerApp1.2\EditText.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ClickerApp1.2\EditText.Designer.cs">
+      <DependentUpon>EditText.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ClickerApp1.2\KeysEvents.cs" />
+    <Compile Include="ClickerApp1.2\obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
+    <Compile Include="ClickerApp1.2\obj\Release\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
+    <Compile Include="ClickerApp1.2\Program.cs" />
+    <Compile Include="ClickerApp1.2\Properties\AssemblyInfo.cs" />
+    <Compile Include="ClickerApp1.2\Properties\Resources.Designer.cs" />
+    <Compile Include="ClickerApp1.2\Properties\Settings.Designer.cs" />
+    <Compile Include="ClickerApp1.2\Repeater.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ClickerApp1.2\ClickerApp.resx">
+      <DependentUpon>ClickerApp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ClickerApp1.2\EditRow.resx">
+      <DependentUpon>EditRow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ClickerApp1.2\EditText.resx">
+      <DependentUpon>EditText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ClickerApp1.2\obj\Debug\ClickerApp1._2.ClickerApp.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Debug\ClickerApp1._2.EditRow.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Debug\ClickerApp1._2.EditText.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Debug\ClickerApp1._2.Properties.Resources.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Release\ClickerApp1._2.ClickerApp.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Release\ClickerApp1._2.EditRow.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Release\ClickerApp1._2.EditText.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\obj\Release\ClickerApp1._2.Properties.Resources.resources" />
+    <EmbeddedResource Include="ClickerApp1.2\Properties\Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include=".vs\ClickerApp13\v16\" />
+    <Folder Include="ClickerApp1.2\obj\Debug\TempPE\" />
+    <Folder Include="ClickerApp1.2\obj\Release\TempPE\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
