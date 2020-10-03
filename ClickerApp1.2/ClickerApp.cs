@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Media;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Serialization;
+using EventManager;
 
-namespace ClickerApp1._2
+namespace EventManager
 {
     public partial class ClickerApp : Form
     {
-        private const int _delay = 1000;
-        private SynchronizationContext _context;
+        private string _buffer;
+
+        private int _pointId;
+
+        private int _delay;
+
+        private int _amountOfLines;
+
+        private string _pathFrom;
+
+        //private string _pathIn;
+
+        private List<string> MethodsList;
+
+        private Thread threadPos;
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -27,396 +38,112 @@ namespace ClickerApp1._2
         {
             InitializeComponent();
 
-            Repeater.MethodsList = new List<string>
+            //keys = new KeysEvents.KeyEvents();
+
+            _pointId = 0;
+            _delay = 2;
+            _amountOfLines = 0;
+            _pathFrom = null;
+            //_pathIn = null;
+
+            MethodsList = new List<string>
             {
                 "MouseClick",
                 "MouseDoubleClick",
                 "MouseRightClick",
                 "InsertText",
-                "InsertJobs"
+                "InsertJobs",
+                "ShiftTab",
+                "Return"
             };
 
-            EditButton.Enabled = false;
-            StartButton.Enabled = ClicksTable.Rows.Count > 1;
-            ResetButton.Enabled = ClicksTable.Rows.Count > 1;
-            DeleteButton.Enabled = ClicksTable.Rows.Count > 1;
+            threadPos = new Thread(() =>
+            {
+                while (true)
+                {
+                    MousePosition.Text = $"X = {Control.MousePosition.X}, Y = {Control.MousePosition.Y}";
+                    Thread.Sleep(5);
+                }
+            });
+            threadPos.Start();
+
+            StartButton.Enabled = ClicksTable.Rows.Count > 0;
+            ResetButton.Enabled = ClicksTable.Rows.Count > 0;
+            DeleteButton.Enabled = ClicksTable.Rows.Count > 0;
+
             EditJobsButton.Enabled = false;
             EditEmployeesButton.Enabled = false;
-            button1.Enabled = false;
-            button1.Visible = false;
-#if DEBUG
-            Repeater.PathIn = @"D:\source\repos\ClickerApp1.2\ClickerApp1.2\bin\Debug\debug.txt";
-            button1.Enabled = true;
-            button1.Visible = true;
-#endif
+            TestButton.Enabled = false;
+            CancelButton.Enabled = false;
+
+            #if DEBUG
+            TestButton.Enabled = true;
+            #endif
 
             DelayBox.Text = 2.ToString();
         }
 
-        private void openNewFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog open = new OpenFileDialog()
-            {
-                Title = "Open .txt file",
-                //InitialDirectory = @"C:\",
-                Filter = "txt files|*.txt",
-                RestoreDirectory = true
-            };
-
-            if (open.ShowDialog() == DialogResult.OK)
-            {
-                open.OpenFile();
-                InsertTextComboBox?.Items.Clear();
-                Repeater.PathFrom = open.FileName;
-                InsertTextComboBox.Items.AddRange(File.ReadAllLines(Repeater.PathFrom));
-                Repeater.AmountOfLines = InsertTextComboBox.Items.Count;
-                InsertTextComboBox.Text = InsertTextComboBox.Items[0].ToString();
-                EditEmployeesButton.Enabled = true;
-                StatusBar.Text = "File is opened";
-                LinesBar.Text = $"Amount of lines: {Repeater.AmountOfLines}";
-            }
-        }
-        
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.KeyCode)
-            {
-                case Keys.Q: AddRow(0); break;
-                case Keys.W: AddRow(1); break;
-                case Keys.E: AddRow(2); break;
-                case Keys.R: if (Repeater.AmountOfLines != 0) AddRow(3); break;
-                case Keys.Z: AddRow(4); break;
-                case Keys.D: SetDelay_Click(null, null); break;
-                case Keys.A: JobsButton_Click(null, null); break;
-                case Keys.Oem2: EditButton_Click(null, null); break;
-                case Keys.Oemplus: EditEmployeesButton_Click(null, null); break;
-                case Keys.OemPipe: EditJobsButton_Click(null, null); break;
-                case Keys.Delete: DeleteButton_Click(null, null); break;
-                case Keys.Enter: StartButton_Click(null, null); break;
-                case Keys.Space: ResetButton_Click(null, null); break;
-            }
-        }
-
-        private void closeToolStripMenuItem_Click(object sender, EventArgs e) => Close();
-
-        private void StartButton_Click(object sender, EventArgs e)
-        {
-#if DEBUG
-            File.AppendAllText(Repeater.PathIn, $"START PROGRAM\n");
-#endif
-            try
-            {
-                ButtonsTurn(false);
-
-                if (ClicksTable.Rows.Count > 1)
-                {
-                    if (Repeater.AmountOfLines > 0)
-                    {
-                        for (int lines = 0, str = 0; lines < Repeater.AmountOfLines; lines++, str++)
-                        {
-#if DEBUG
-                            File.AppendAllText(Repeater.PathIn, $"Line {lines + 1} =>\n");                   
-#endif
-                            ClickProgram(str);
-                        }
-                        ButtonsTurn(true);
-                    }
-                    else
-                    {
-                        ClickProgram();
-                        ButtonsTurn(true);
-                    }
-                }
-                else throw new Exception("Fill the rows");
-            }
-            catch (Exception exception)
-            {
-                StatusBar.Text = exception.Message;
-                SystemSounds.Hand.Play();
-                ButtonsTurn(true);
-            }
-        }
-
-        private void ClickProgram(int str = 0)
-        {
-            for (int i = 0; i < ClicksTable.RowCount; i++)
-            {
-#if DEBUG
-                File.AppendAllText(Repeater.PathIn,$"\t\tRow {i + 1} =>\n");       
-#endif
-                KeysEvents.NewPosition(GetXfromRow(i), GetYfromRow(i));
-
-                switch (GetMethodNameFromRow(i))
-                {
-                    case "MouseClick": KeysEvents.MouseClick(); break;
-                    case "MouseDoubleClick": KeysEvents.MouseDoubleClick(); break;
-                    case "MouseRightClick": KeysEvents.MouseRightClick(); break;
-                    case "InsertText": KeysEvents.InsertText(str, InsertTextComboBox.Items); break;
-                    case "InsertJobs": KeysEvents.InsertJobs(JobsComboBox.Items); break;
-                }
-
-#if DEBUG
-                File.AppendAllText(Repeater.PathIn, $"\t\t\tX = {KeysEvents.GetPosX()}, Y = {KeysEvents.GetPosY()}\n");
-#endif
-                Thread.Sleep(GetDelayFromRow(i));
-            }
-        }
-
-        //private void DelayBox_MouseHover(object sender, EventArgs e) => DelayBoxTooltip.SetToolTip(DelayBox, "Press <Enter> to set delay");
-
-        private void AddRow(int methodId, int indexLine = 0)
-        {
-            try
-            {
-                ClicksTable.Rows.Add
-                (
-                    ++Repeater.PointId,
-                    KeysEvents.GetPosX(),
-                    KeysEvents.GetPosY(),
-                    Repeater.Delay,
-                    Repeater.MethodsList[methodId]
-                );
-
-            }
-            catch (Exception e)
-            {
-                StatusBar.Text = e.Message;
-                SystemSounds.Hand.Play();
-            }
-        }
-
-        private int GetXfromRow(int index) => 
-            int.Parse(ClicksTable.Rows[index].Cells[1].Value.ToString());
-        private int GetYfromRow(int index) => 
-            int.Parse(ClicksTable.Rows[index].Cells[2].Value.ToString());
-        private int GetDelayFromRow(int index) => 
-            int.Parse(ClicksTable.Rows[index].Cells[3].Value.ToString()) * _delay;
-        private string GetMethodNameFromRow(int index) => 
-            ClicksTable.Rows[index].Cells[4].Value.ToString();
-
-        private void DelayBox_TextChanged(object sender, EventArgs e)
-        {
-            var match = Regex.Match(DelayBox.Text, "\\D");
-            if (match.Success) DelayBox.Text = DelayBox.Text.Remove(match.Index);
-        }
-        private void DelayBox_MouseClick(object sender, MouseEventArgs e) => DelayBox.Text = "";
-
-        private void ResetButton_Click(object sender, EventArgs e)
-        {
-            if (ClicksTable.RowCount > 1)
-            {
-                try
-                {
-                    Repeater.Reset();
-                    ClicksTable.Rows.Clear();
-                    StatusBar.Text = "StatusBar";
-                    LinesBar.Text = "LinesBar";
-                    InsertTextComboBox.Items.Clear();
-                    JobsComboBox.Items.Clear();
-                    InsertTextComboBox.Text = "";
-                    JobsComboBox.Text = "";
-                    EditJobsButton.Enabled = false;
-                    EditEmployeesButton.Enabled = false;
-                }
-                catch (Exception exception)
-                {
-                    StatusBar.Text = exception.Message;
-                    SystemSounds.Hand.Play();
-                    ButtonsTurn(true);
-                }
-            }
-        }
-
-        private void SetDelay_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                Repeater.Delay = int.Parse(DelayBox.Text);
-                DelayBox.Text = null;
-                StatusBar.Text = $"Delay equals {Repeater.Delay} sec";
-            }
-            catch (Exception exception)
-            {
-                StatusBar.Text = exception.Message;
-                SystemSounds.Hand.Play();
-            }
-        }
-
-        private void EditButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (ClicksTable.Rows.Count > 1)
-                {
-                    int delay = int.Parse(ClicksTable.SelectedRows[0].Cells[3].Value.ToString());
-                    string method = ClicksTable.SelectedRows[0].Cells[4].Value.ToString();
-
-                    using (EditRow edit = new EditRow(delay, method /*text*/))
-                    {
-                        if (edit.ShowDialog() == DialogResult.OK)
-                        {
-                            if (InsertTextComboBox.Items.Count == 0) 
-                                Repeater.AmountOfLines = InsertTextComboBox.Items.Count;
-                            //if (JobsComboBox.Items.Count == 0) //Repeater.AmountOfJobs = JobsComboBox.Items.Count
-
-                            ClicksTable.SelectedRows[0].Cells[3].Value = edit.Delay.ToString();
-                            ClicksTable.SelectedRows[0].Cells[4].Value = edit.MethodName;
-                        }
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-            }
-        }
-
-        private void ClicksTable_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex == -1 && e.RowIndex < ClicksTable.RowCount)
-            {
-                EditButton.Enabled = true;
-                DeleteButton.Enabled = true;
-            }
-            else
-            {
-                EditButton.Enabled = false;
-                DeleteButton.Enabled = false;
-            }
-        }
-
-        private void DeleteButton_Click(object sender, EventArgs e)
-        {
-            if (ClicksTable.RowCount > 0)
-            {
-                try
-                {
-                    if (ClicksTable.SelectedRows[0].Index == 0)
-                    {
-                        int next = ClicksTable.Rows.GetNextRow
-                        (
-                            0,
-                            DataGridViewElementStates.None
-                        );
-                        
-                        for (int i = 0; i < ClicksTable.Rows.Count; i++)
-                        {
-                            ClicksTable.Rows[i].Cells[0].Value = i;
-                            Repeater.PointId = i;
-                        }
-
-                        ClicksTable.Rows.RemoveAt(ClicksTable.SelectedRows[0].Index);
-                    }
-                    else if (ClicksTable.SelectedRows[0].Index > 0)
-                    {
-                        int previous = ClicksTable.Rows.GetPreviousRow
-                            (
-                                ClicksTable.SelectedRows[0].Index, 
-                                DataGridViewElementStates.None
-                            ) + 1;
-
-                        for (int i = previous; i < ClicksTable.Rows.Count; i++)
-                        {
-                            ClicksTable.Rows[i].Cells[0].Value = i;
-                            Repeater.PointId = i;
-                        }
-
-                        ClicksTable.Rows.RemoveAt(ClicksTable.SelectedRows[0].Index);
-                    }
-                    else if (ClicksTable.AreAllCellsSelected(false))
-                    {
-                        ClicksTable.Rows.Clear();
-                        Repeater.PointId = 0;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception);
-                }
-            }
-        }
-
+        #region Events
         private void ClicksTable_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            if (ClicksTable.RowCount > 1 && StartButton.Enabled == false) StartButton.Enabled = true;
-            if (ClicksTable.RowCount > 1 && ResetButton.Enabled == false) ResetButton.Enabled = true;
+            if (ClicksTable.RowCount > 0 && StartButton.Enabled == false) StartButton.Enabled = true;
+            if (ClicksTable.RowCount > 0 && ResetButton.Enabled == false) ResetButton.Enabled = true;
         }
-
         private void ClicksTable_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
         {
-            if (ClicksTable.RowCount < 1 && StartButton.Enabled) StartButton.Enabled = false;
-            if (ClicksTable.RowCount < 1 && ResetButton.Enabled) ResetButton.Enabled = false;
+            if (ClicksTable.RowCount < 0 && StartButton.Enabled) StartButton.Enabled = false;
+            if (ClicksTable.RowCount < 0 && ResetButton.Enabled) ResetButton.Enabled = false;
         }
-
-        private void JobsButton_Click(object sender, EventArgs e)
+        private void ClicksTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            JobsComboBox.Items.Add(JobsComboBox.Text);
-            JobsComboBox.Text = JobsComboBox.Items[0].ToString();
-            if (EditJobsButton.Enabled == false) EditJobsButton.Enabled = true;
-        }
+            if (e.ColumnIndex == -1 && e.RowIndex < ClicksTable.RowCount) DeleteButton.Enabled = true;
+            else DeleteButton.Enabled = false;
 
-        private void EditEmployeesButton_Click(object sender, EventArgs e)
+        }
+        private void ClicksTable_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
-            if (InsertTextComboBox.Items.Count >= 1)
-            {
-                string text = InsertTextComboBox.SelectedItem?.ToString();
-
-                using (EditText edit = new EditText(text))
-                {
-                    if (edit.ShowDialog() == DialogResult.OK) 
-                        InsertTextComboBox.Items[InsertTextComboBox.SelectedIndex] = edit.Text;
-                }
-            }
+            if (ClicksTable.CurrentCell.ColumnIndex != 5) _buffer = ClicksTable.CurrentCell.Value.ToString();
         }
-
-        private void EditJobsButton_Click(object sender, EventArgs e)
+        private void ClicksTable_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (JobsComboBox.Items.Count >= 1)
-            {
-                string text = JobsComboBox.SelectedItem?.ToString();
-
-                using (EditText edit = new EditText(text))
-                {
-                    if (edit.ShowDialog() == DialogResult.OK) 
-                        JobsComboBox.Items[JobsComboBox.SelectedIndex] = edit.Text;
-                }
-            }
+            
         }
-
-        private void ButtonsTurn(bool source)
+        
+        private void ClickerApp_FormClosed(object sender, FormClosedEventArgs e)
         {
-            StartButton.Enabled =
-                ResetButton.Enabled =
-                    DeleteButton.Enabled =
-                        EditButton.Enabled =
-                            EditEmployeesButton.Enabled =
-                                EditJobsButton.Enabled =
-                                    JobsButton.Enabled =
-                                        SetDelayButton.Enabled =
-                                            DelayBox.Enabled =
-                                                JobsComboBox.Enabled =
-                                                    InsertTextComboBox.Enabled = source;
+            threadPos.Abort();
+            //threadLines.Abort();
         }
+        #endregion
 
+        #region Menu
+        private void openNewFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e) => Close();
         private void tooltipsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show
-            (  "Key < Q >\tOne click\n" +
-                    "Key < W >\tDouble click\n" +
-                    "Key < E >\t\tRight click\n" +
-                    "Key < R >\t\tInsert text\n" +
-                    "Key < Z >\t\tInsert jobs\n" +
-                    "Key < D >\tSet delay\n" +
-                    "Key < A >\t\tAdd jobs\n" +
-                    "Key < Enter >\tStart program\n" +
-                    "Key < Space >\tReset program\n" +
-                    "Key < / >\t\tEdit row\n" +
-                    "Key < = >\t\tEdit employees\n" +
-                    "Key < | >\t\tEdit jobs\n" +
-                    "Key < Delete >\tDelete row"
-            );
-        }
+            string message = string.Format($"Key<Q>\t\t=>\tOne click\n\r" +
+                                           $"Key<W>\t\t=>\tRight click\n\r" +
+                                           $"Key<E>\t\t=>\tDouble click\n\r" +
+                                           $"Key<R>\t\t=>\tInsert text\n\r" +
+                                           $"Key<Z>\t\t=>\tInsert ext. text\n\r" +
+                                           $"Key<T>\t\t=>\tEmulate 'Shift+Tab'\n\r" +
+                                           $"Key<N>\t\t=>\tEmulate 'Return'\n\r" +
+                                           $"Key<D>\t\t=>\tSet delay\n\r" +
+                                           $"Key<A>\t\t=>\tAdd text\n\r" +
+                                           $"Key<=>\t\t=>\tEdit text\n\r" +
+                                           $"Key<Shift + A>\t=>\tAdd ext. text\n\r" +
+                                           $"Key<|>\t\t=>\tEdit ext. text\n\r" +
+                                           $"Key<S>\t\t=>\tStart program\n\r" +
+                                           $"Key<X>\t\t=>\tCancel program\n\r" +
+                                           $"Key<C>\t\t=>\tReset all\n\r" +
+                                           $"Key<Delete>\t=>\tDelete selected row\n\r" +
+                                           $"Key<Shift+[Q-N]>\t=>\tInsert row\n\r");
 
+            MessageBox.Show(message);
+        }
         private void saveConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog save = new SaveFileDialog
@@ -434,7 +161,6 @@ namespace ClickerApp1._2
             }
 
         }
-
         private void openConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog
@@ -452,45 +178,237 @@ namespace ClickerApp1._2
 
                 ParseXmlDocument(open.FileName);
 
-                Repeater.PointId = ClicksTable.Rows.GetLastRow(DataGridViewElementStates.None) + 1;
+                _pointId = ClicksTable.Rows.GetLastRow(DataGridViewElementStates.None) + 1;
             }
         }
+        #endregion
 
-        private void ParseXmlDocument(string pathSource)
+        #region Buttons
+        private void StartButton_Click(object sender, EventArgs e)
         {
-            string xmlFile = File.ReadAllText(pathSource);
-            string pattern =
-                @"<PointID>(.*?)</PointID>(\r\n\s+)<X>(.*?)</X>(\r\n\s+)<Y>(.*?)</Y>(\r\n\s+)<Delay>(.*?)</Delay>(\r\n\s+)<TypeOfEvent>(.*?)</TypeOfEvent>(\r\n\s+)";
-
-            foreach (Match match in Regex.Matches(xmlFile, pattern, RegexOptions.Singleline))
+            try
             {
-                ClicksTable.Rows.Add
-                (
-                    match.Groups[1].Value,
-                    match.Groups[3].Value,
-                    match.Groups[5].Value,
-                    match.Groups[7].Value,
-                    match.Groups[9].Value
-                );
+                ButtonsTurn(false);
+                StartButton.Enabled = false;
+                CancelButton.Enabled = true;
+                if (BWorker.IsBusy != true) BWorker.RunWorkerAsync();
             }
-
-            foreach (Match match in Regex.Matches(xmlFile, @"<Names>(.*?)</Names>"))
-                InsertTextComboBox.Items.Add(match.Groups[1].Value);
-
-            foreach (Match match in Regex.Matches(xmlFile, @"<Jobs>(.*?)</Jobs>"))
-                JobsComboBox.Items.Add(match.Groups[1].Value);
-
-            InsertTextComboBox.Text = InsertTextComboBox.Items[0].ToString();
-            JobsComboBox.Text = JobsComboBox.Items[0].ToString();
-
-            Repeater.AmountOfLines = InsertTextComboBox.Items.Count;
-
-            EditButton.Enabled = EditEmployeesButton.Enabled = EditJobsButton.Enabled = true;
+            catch (Exception exception)
+            {
+                StatusBar.Text = exception.Message;
+                SystemSounds.Hand.Play();
+                ButtonsTurn(true);
+            }
         }
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            if (BWorker.WorkerSupportsCancellation) BWorker.CancelAsync();
+            CancelButton.Enabled = false;
+            StartButton.Enabled = true;
+        }
+        private void ResetButton_Click(object sender, EventArgs e)
+        {
+            if (ClicksTable.RowCount > 0)
+            {
+                try
+                {
+                    _pointId = 0;
 
+                    ClicksTable.Rows?.Clear();
+
+                    StatusBar.Text = "StatusBar";
+                    LinesBar.Text = "LinesBar";
+                    WorkerBar.Text = "ProgressBar";
+
+                    InsertTextComboBox.Items?.Clear();
+                    JobsComboBox.Items?.Clear();
+
+                    InsertTextComboBox.Text = "";
+                    JobsComboBox.Text = "";
+
+                    EditJobsButton.Enabled = false;
+                    EditEmployeesButton.Enabled = false;
+
+                    StartButton.Enabled = false;
+                    DeleteButton.Enabled = false;
+                    CancelButton.Enabled = false;
+                    ResetButton.Enabled = false;
+
+                    ProgressBar.Value = 0;
+
+                }
+                catch (Exception exception)
+                {
+                    StatusBar.Text = exception.Message;
+                    SystemSounds.Hand.Play();
+                    ButtonsTurn(true);
+                }
+            }
+        }
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            DeleteRow();
+        }
+        private void SetDelay_Click(object sender, EventArgs e)
+        {
+            _delay = (int)DelayBox.Value;
+            StatusBar.Text = $@"Delay equals {_delay} sec";
+        }
+        private void AddTextButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog()
+            {
+                Title = "Open .txt file",
+                Filter = "txt files|*.txt",
+                RestoreDirectory = true
+            };
+
+            if (open.ShowDialog() == DialogResult.OK)
+            {
+                open.OpenFile();
+
+                InsertTextComboBox?.Items.Clear();
+
+                _pathFrom = open.FileName;
+                InsertTextComboBox.Items.AddRange(File.ReadAllLines(_pathFrom));
+
+                _amountOfLines = InsertTextComboBox.Items.Count;
+                InsertTextComboBox.Text = InsertTextComboBox.Items[0].ToString();
+
+                EditEmployeesButton.Enabled = true;
+
+                StatusBar.Text = "File is opened";
+                LinesBar.Text = $@"Amount of lines: {_amountOfLines}";
+            }
+        }
+        private void AddJobsButton_Click(object sender, EventArgs e)
+        {
+            JobsComboBox.Items.Add(JobsComboBox.Text);
+            JobsComboBox.Text = JobsComboBox.Items[0].ToString();
+            if (EditJobsButton.Enabled == false) EditJobsButton.Enabled = true;
+        }
+        private void EditEmployeesButton_Click(object sender, EventArgs e)
+        {
+            if (InsertTextComboBox.Items.Count >= 0)
+            {
+                string text = InsertTextComboBox.SelectedItem?.ToString();
+
+                using (EditText edit = new EditText(text))
+                {
+                    if (edit.ShowDialog() == DialogResult.OK)
+                        InsertTextComboBox.Items[InsertTextComboBox.SelectedIndex] = edit.Text;
+                }
+            }
+        }
+        private void EditJobsButton_Click(object sender, EventArgs e)
+        {
+            if (JobsComboBox.Items.Count >= 0)
+            {
+                string text = JobsComboBox.SelectedItem?.ToString();
+
+                using (EditText edit = new EditText(text))
+                {
+                    if (edit.ShowDialog() == DialogResult.OK)
+                        JobsComboBox.Items[JobsComboBox.SelectedIndex] = edit.Text;
+                }
+            }
+        }
+        #endregion
+
+        #region Functions
+        private int GetXfromRow(int index) =>
+            int.Parse(ClicksTable.Rows[index].Cells[1].Value.ToString());
+        private int GetYfromRow(int index) =>
+            int.Parse(ClicksTable.Rows[index].Cells[2].Value.ToString());
+        private int GetDelayFromRow(int index) =>
+            int.Parse(ClicksTable.Rows[index].Cells[3].Value.ToString());
+        private string GetMethodNameFromRow(int index) =>
+            ClicksTable.Rows[index].Cells[4].Value.ToString();
+        private void ButtonsTurn(bool source)
+        {
+            BeginInvoke((MethodInvoker)delegate
+            {
+                StartButton.Enabled =
+                ResetButton.Enabled =
+                    DeleteButton.Enabled =
+                            EditEmployeesButton.Enabled =
+                                EditJobsButton.Enabled =
+                                    JobsButton.Enabled =
+                                        SetDelayButton.Enabled =
+                                            DelayBox.Enabled =
+                                                JobsComboBox.Enabled =
+                                                    InsertTextComboBox.Enabled = source;
+            });
+        }
+        private void AddRow(int methodId)
+        {
+            ClicksTable.Rows.Add(++_pointId, GetPosX(), GetPosY(), _delay, MethodsList[methodId]);
+            //DataGridViewComboBoxCell cell = new DataGridViewComboBoxCell();
+            //cell.Items.AddRange(TypeOfEvent.Items);
+            //cell.Value = ;
+            StatusBar.Text = $"Row {_pointId} added";
+        }
+        private void DeleteRow()
+        {
+            if (ClicksTable.RowCount > 0)
+            {
+                if (ClicksTable.SelectedRows[0].Index == 0)
+                {
+                    for (int i = 0; i < ClicksTable.Rows.Count; i++)
+                    {
+                        ClicksTable.Rows[i].Cells[0].Value = i;
+                        _pointId = i;
+                    }
+
+                    ClicksTable.Rows.RemoveAt(ClicksTable.SelectedRows[0].Index);
+                }
+                else if (ClicksTable.SelectedRows[0].Index > 0)
+                {
+                    int previous = ClicksTable.Rows.GetPreviousRow
+                        (
+                            ClicksTable.SelectedRows[0].Index,
+                            DataGridViewElementStates.None
+                        ) + 1;
+
+                    for (int i = previous; i < ClicksTable.Rows.Count; i++)
+                    {
+                        ClicksTable.Rows[i].Cells[0].Value = i;
+                        _pointId = i;
+                    }
+
+                    ClicksTable.Rows.RemoveAt(ClicksTable.SelectedRows[0].Index);
+                }
+                else if (ClicksTable.AreAllCellsSelected(false))
+                {
+                    ClicksTable.Rows.Clear();
+                    _pointId = 0;
+                }
+            }
+        }
+        private void InsertRow(int methodId)
+        {
+            if (ClicksTable.Rows.Count != 0)
+            {
+                object[] items = { 0, GetPosX(), GetPosY(), _delay, MethodsList[methodId] };
+
+                if (ClicksTable.SelectedRows.Count > 0)
+                {
+                    int index = ClicksTable.SelectedRows[0].Index;
+                    _pointId = 0;
+
+                    ClicksTable.Rows.Insert(index, items);
+
+                    for (int i = 0; i < ClicksTable.Rows.Count; i++)
+                        ClicksTable.Rows[i].Cells[0].Value = ++_pointId;
+                    StatusBar.Text = @$"Row {index + 1} inserted";
+                }
+                else StatusBar.Text = "Строка не выбрана!";
+            }
+            else AddRow(methodId);
+        }
         private DataSet CreateXmlDataSet()
         {
-            var dataSet = new DataSet();
+            var dataSet = new DataSet("ClickerApp");
 
             var data = new DataTable("ClickerProgramTable");
 
@@ -516,7 +434,12 @@ namespace ClickerApp1._2
             foreach (DataGridViewRow row in ClicksTable.Rows)
             {
                 for (int i = 0; i < row.Cells.Count; i++)
-                    values[i] = row.Cells[i].Value;
+                {
+                    if (row.Cells[i].Value == null)
+                        values[i] = "null";
+                    else
+                        values[i] = row.Cells[i].Value;
+                }
                 data.Rows.Add(values);
             }
 
@@ -534,58 +457,64 @@ namespace ClickerApp1._2
 
             return dataSet;
         }
-
-#if DEBUG
-        private void button1_Click(object sender, EventArgs e)
+        private void ParseXmlDocument(string pathSource)
         {
-            if (ClicksTable.Rows.Count > 0)
-            {
-                if (Repeater.AmountOfLines > 0)
-                {
-                    for (int lines = 0; lines < Repeater.AmountOfLines; lines++)
-                    {
-                        Test(lines);
-                        //Thread.Sleep(100/*Repeater.Delay*/);
-                    }
-                    MessageBox.Show("Done!");
-                }
-                else
-                {
-                    Test();
-                    MessageBox.Show("Done!");
-                }
-            }
-        }
+            string xmlFile = File.ReadAllText(pathSource);
+            string pattern =
+                @"<PointID>(.*?)</PointID>(\r\n\s+)<X>(.*?)</X>(\r\n\s+)<Y>(.*?)</Y>(\r\n\s+)<Interval>(.*?)</Interval>(\r\n\s+)<TypeOfEvent>(.*?)</TypeOfEvent>(\r\n\s+)<Description>(.*?)</Description>";
 
-        private void Test(int index = 0)
+            foreach (Match match in Regex.Matches(xmlFile, pattern, RegexOptions.Singleline))
+            {
+                ClicksTable.Rows.Add
+                (
+                    match.Groups[1].Value,
+                    match.Groups[3].Value,
+                    match.Groups[5].Value,
+                    match.Groups[7].Value,
+                    match.Groups[9].Value,
+                    match.Groups[11].Value
+                );
+            }
+
+            foreach (Match match in Regex.Matches(xmlFile, @" < Names>(.*?)</Names>"))
+                InsertTextComboBox.Items.Add(match.Groups[1].Value);
+
+            foreach (Match match in Regex.Matches(xmlFile, @"<Jobs>(.*?)</Jobs>"))
+                JobsComboBox.Items.Add(match.Groups[1].Value);
+
+            if ((InsertTextComboBox.Items.Count != 0) || (JobsComboBox.Items.Count != 0))
+            {
+                InsertTextComboBox.Text = $"{InsertTextComboBox.Items[0]}";
+                JobsComboBox.Text = $"{JobsComboBox.Items[0]}";
+            }
+
+            _amountOfLines = InsertTextComboBox.Items.Count;
+
+            EditEmployeesButton.Enabled = EditJobsButton.Enabled = true;
+        }
+        #endregion
+
+        private void TestButton_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < ClicksTable.Rows.Count; i++)
-            {
-                KeysEvents.NewPosition(GetXfromRow(i), GetYfromRow(i));
+            //object[] items = { 0, GetPosX(), GetPosY(), _delay, MethodsList[0] };
+            //ClicksTable.Rows.Insert(ClicksTable.SelectedRows[0].Index, items);
 
-                switch (GetMethodNameFromRow(i))
-                {
-                    case "MouseClick":
-                        KeysEvents.MouseClick();
-                        break;
-                    case "MouseDoubleClick":
-                        KeysEvents.MouseDoubleClick();
-                        break;
-                    case "MouseRightClick":
-                        KeysEvents.MouseRightClick();
-                        break;
-                    case "InsertText":
-                        KeysEvents.InsertText(index, InsertTextComboBox.Items);
-                        break;
-                    case "InsertJobs":
-                        KeysEvents.InsertJobs(JobsComboBox.Items);
-                        break;
-                }
+            //_pointId = 0;
 
-                Console.WriteLine($"i = {i}");
-                Thread.Sleep(200/*GetDelayFromRow(i)*/);
-            }
+            //for (int i = 0; i < ClicksTable.Rows.Count; i++)
+            //    ClicksTable.Rows[i].Cells[0].Value = ++_pointId;
+
+            //int test = 117;
+
+            //int a = 0, b = 0, c = 0;
+
+            //a = test / 100 % 10;
+            //b = test / 10 % 10;
+            //c = test / 1 % 10;
+
+            //string abc = "Алешаева";
+
+            //SendKeys.Send(abc);
         }
-#endif
     }
 }

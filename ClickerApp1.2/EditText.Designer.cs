@@ -1,4 +1,4 @@
-﻿namespace ClickerApp1._2
+﻿namespace EventManager
 {
     partial class EditText
     {

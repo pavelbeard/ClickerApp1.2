@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ClickerApp1._2
+namespace EventManager
 {
     static class Program
     {
@@ -16,7 +13,7 @@ namespace ClickerApp1._2
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ClickerApp());
+            Application.Run(new EventManager.ClickerApp());
         }
     }
 }
